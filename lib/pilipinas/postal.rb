@@ -80,9 +80,10 @@ module Pilipinas
       def build_index
         rows = Psych.load_file(File.join(DATA_DIR, 'postal.yml'), freeze: true) || []
         entries = rows.filter_map { |row| build_entry(row) }
+        canonical_buckets = {}
         {
-          by_locality: buckets(entries) { |entry| normalize(entry.locality) },
-          by_zip: buckets(entries, &:zip_code)
+          by_locality: buckets(entries, canonical_buckets) { |entry| normalize(entry.locality) },
+          by_zip: buckets(entries, canonical_buckets, &:zip_code)
         }.freeze
       end
 
@@ -93,8 +94,11 @@ module Pilipinas
         Entry.new(**row.slice('region', 'province', 'locality', 'zip_code').transform_keys(&:to_sym))
       end
 
-      def buckets(entries, &)
-        entries.group_by(&).transform_values(&:freeze).freeze
+      def buckets(entries, canonical_buckets, &)
+        entries.group_by(&).transform_values do |bucket|
+          bucket.freeze
+          canonical_buckets[bucket] ||= bucket
+        end.freeze
       end
     end
   end

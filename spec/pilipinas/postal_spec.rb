@@ -90,6 +90,29 @@ RSpec.describe Pilipinas::Postal do
       expect(Pilipinas::Cache.keys).to eq(['index:Pilipinas::Postal'])
     end
 
+    it 'shares frozen buckets only when their complete entry sequences agree' do
+      rows.push(rows.first.merge('locality' => 'Unique Place', 'zip_code' => '6789'))
+      forward = described_class.lookup(locality: 'Unique Place')
+      expect(described_class.reverse_lookup(zip_code: '6789')).to equal(forward)
+
+      shared_zip = described_class.reverse_lookup(zip_code: '0123')
+      different_locality = described_class.lookup(locality: 'Other Place')
+      expect(shared_zip).not_to equal(different_locality)
+      expect(shared_zip.map(&:locality)).to eq(['Santa Maria', 'Other Place'])
+      expect(different_locality.map(&:locality)).to eq(['Other Place'])
+    end
+
+    it 'also shares identical multi-entry sequences across directions' do
+      rows.push(
+        rows.first.merge('locality' => 'Shared Name', 'zip_code' => '8901'),
+        rows.first.merge('locality' => 'Shared Name', 'province' => 'Beta', 'zip_code' => '8901')
+      )
+      forward = described_class.lookup(locality: 'Shared Name')
+      expect(forward.size).to eq(2)
+      expect(described_class.reverse_lookup(zip_code: '8901')).to equal(forward)
+      expect(described_class.lookup(locality: 'Shared Name', province: 'Beta').map(&:province)).to eq(['Beta'])
+    end
+
     it 'excludes malformed source records instead of padding or inventing fields' do
       rows.push(
         nil,
