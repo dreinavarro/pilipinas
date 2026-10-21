@@ -118,6 +118,54 @@ Pilipinas::Barangay.find_by(name: "Casay")
 
 ---
 
+### Postal ZIP lookup
+
+Postal places are independent of the geography hierarchy. Both directions return
+frozen arrays of immutable entries with frozen `region`, `province`, `locality`
+and `zip_code` strings. Every matching entry is returned; use ordinary array
+methods to inspect zero, one or multiple matches.
+
+```ruby
+places = Pilipinas::Postal.lookup(locality: 'Pandacan', province: 'Metro Manila')
+places.map(&:zip_code) # => ['1011']
+
+Pilipinas::Postal.reverse_lookup(zip_code: '1011').map(&:locality) # => ['Pandacan']
+Pilipinas::Postal.lookup(locality: 'Makati') # => [] (snapshot gap)
+```
+
+`lookup` matches locality labels exactly after normalizing case and whitespace.
+Optional `province:` and `region:` filters use the same normalization and must
+all agree. No aliases, fuzzy matching, geographic codes or inferred city/barangay
+coverage are used. `reverse_lookup` requires a string of exactly four ASCII
+digits; leading zeroes are preserved. Blank/malformed inputs return `[]` without
+guessing or padding. A missing result means **absent from this snapshot**, not
+an invalid address or ZIP. Distinct places sharing a ZIP remain separate entries.
+
+Postal code loads on first use; data is parsed only on the first valid postal
+query. The shared cache
+builds locality and ZIP indexes once; warm queries access the matching bucket.
+Optional parent filters inspect only that locality bucket. Unfiltered results
+reuse cached frozen arrays. Existing geography calls do not load postal data.
+
+#### Source and coverage
+
+The bundled 958 distinct entries come from the official Philippine Postal
+Corporation [PHLPost ZIP Code Locator](https://phlpost.gov.ph/zip-code-locator/),
+retrieved **21 October 2026**. The locator gives no publication/effective date;
+this is a dated retrieval, not a claim that every postal assignment is current.
+Its 960 rows contain one exact duplicate and one malformed Cajidiocan ZIP value
+(the word `Cajidiocan`), which is excluded. Coverage is partial: NCR contains only
+Pandacan and Makati is absent. Source labels are retained, including suspicious
+`Agusan del Norte` province labels for Lantapan and Kitaotao; no unverified
+corrections or joins to geographic entities have been added.
+
+Source notices: “All content is in the public domain unless otherwise stated.”
+and “Copyright © 2026 Philippine Postal Corporation”. No postal-table-specific
+reuse exception was found. The gem's existing MIT license and attribution remain
+in effect for its code.
+
+---
+
 ### Entity interface
 
 Every entity object exposes:
