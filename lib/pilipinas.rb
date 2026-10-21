@@ -46,6 +46,8 @@ require 'pilipinas/railtie' if defined?(Rails)
 #   rake pilipinas:load
 #
 module Pilipinas
+  autoload :Postal, 'pilipinas/postal'
+
   # Base error class for all Pilipinas exceptions.
   class Error < StandardError; end
 

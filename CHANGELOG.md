@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Independent, lazy `Pilipinas::Postal.lookup` and `.reverse_lookup` with frozen arrays of immutable postal entries and a dated, attributed partial PHLPost snapshot.
+
 - Pure Ruby `Barangay#city`, `City#province` and `Province#region` navigation using a bundled, cached parent-code index and canonical frozen entities.
 
 ### Changed
