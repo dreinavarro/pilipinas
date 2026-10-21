@@ -246,6 +246,28 @@ end
 
 ## Advanced
 
+### Upward navigation
+
+The pure Ruby API also returns each immediate parent, without a database:
+
+```ruby
+barangay = Pilipinas::Barangay.find_by(code: "771")
+barangay.city                   # => Pandacan (code "770")
+barangay.city.province          # => NCR, CITY OF MANILA, FIRST DISTRICT
+barangay.city.province.region   # => National Capital Region (NCR)
+```
+
+Parents are the same frozen instances returned by code lookups. An unresolved
+parent returns `nil`. Parent codes load once from a bundled index; repeated
+navigation uses direct hash lookups and does not scan association files or load
+all child collections. `Pilipinas::Cache.clear` clears the parent index too.
+
+These methods follow the existing display hierarchy. Manila barangays belong to
+district City objects such as Pandacan; the aggregate City of Manila (code `3`)
+has no barangays. Province/display-group placement does not assert administrative
+jurisdiction. Geography refreshes must regenerate the parent index and pass the
+complete downward/upward consistency specs before shipping.
+
 ### Cache management
 
 The in-memory cache is global to the process. In long-running processes the data never reloads (intentional — YAML files are static). To force a reload (e.g. in tests):

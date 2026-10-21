@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Pure Ruby `Barangay#city`, `City#province` and `Province#region` navigation using a bundled, cached parent-code index and canonical frozen entities.
+
+### Changed
+
+- Run existing CI checks for pushes and pull requests targeting `develop`.
+
+---
+
 ## [1.1.6] - 2026-08-13
 
 ### Dependencies

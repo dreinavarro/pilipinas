@@ -10,6 +10,14 @@ module Pilipinas
   #   province.cities  # => [#<City ...>, ...]
   #
   class Province < Base
+    # Returns the canonical parent in the bundled display hierarchy.
+    #
+    # @return [Region, nil]
+    def region
+      parent_code = ParentMap.code_for('provinces', code)
+      Region.find_by(code: parent_code) if parent_code
+    end
+
     # Returns the cities/municipalities belonging to this province.
     #
     # Results are cached after the first call.

@@ -11,6 +11,14 @@ module Pilipinas
   #   Pilipinas::Barangay.find_by(name: "Casay")
   #
   class Barangay < Base
+    # Returns the canonical parent in the bundled display hierarchy.
+    #
+    # @return [City, nil]
+    def city
+      parent_code = ParentMap.code_for('barangays', code)
+      City.find_by(code: parent_code) if parent_code
+    end
+
     class << self
       private
 
