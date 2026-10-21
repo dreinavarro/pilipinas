@@ -27,9 +27,17 @@ RSpec.describe 'Pure Ruby parent navigation' do
 
   it 'returns nil for unresolved codes at each level' do
     [Pilipinas::Barangay, Pilipinas::City, Pilipinas::Province].zip(%i[city province region]).each do |klass, method|
-      unknown = klass.send(:new, code: 'unresolved', name: 'Unknown')
-      expect(unknown.public_send(method)).to be_nil
+      ['unresolved', '0', '-771', '0771', '+771', '771x', '9' * 1000].each do |code|
+        unknown = klass.send(:new, code: code, name: 'Unknown')
+        expect(unknown.public_send(method)).to be_nil
+      end
     end
+  end
+
+  it 'does not resolve codes that belong to a different child type' do
+    expect(Pilipinas::City.send(:new, code: '771', name: 'Wrong type').province).to be_nil
+    expect(Pilipinas::Province.send(:new, code: '770', name: 'Wrong type').region).to be_nil
+    expect(Pilipinas::Barangay.send(:new, code: '2', name: 'Wrong type').city).to be_nil
   end
 
   it 'reads only the map and canonical parent index on a cold upward lookup' do
@@ -66,8 +74,8 @@ RSpec.describe 'Pure Ruby parent navigation' do
     expect(map).to be_frozen
     map.each_value do |codes|
       expect(codes).to be_frozen
-      expect(codes.keys).to all(be_frozen)
-      expect(codes.values).to all(be_frozen)
+      expect(codes).to be_an(Array)
+      expect(codes).to all(be_frozen)
     end
   end
 
@@ -93,7 +101,9 @@ RSpec.describe 'Pure Ruby parent navigation' do
       end
       expect(assignments.keys).to match_array(child_class.all.map(&:code))
       cached = Pilipinas::Cache.fetch('parent_codes') { raise 'expected a cached map' }
-      expect(cached.fetch(collection.to_s)).to eq(assignments)
+      expected = Array.new(assignments.keys.map(&:to_i).max + 1)
+      assignments.each { |child, parent| expected[child.to_i] = parent }
+      expect(cached.fetch(collection.to_s)).to eq(expected)
     end
   end
 end

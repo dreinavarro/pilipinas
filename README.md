@@ -259,7 +259,7 @@ barangay.city.province.region   # => National Capital Region (NCR)
 
 Parents are the same frozen instances returned by code lookups. An unresolved
 parent returns `nil`. Parent codes load once from a bundled index; repeated
-navigation uses direct hash lookups and does not scan association files or load
+navigation uses direct indexed lookups and does not scan association files or load
 all child collections. `Pilipinas::Cache.clear` clears the parent index too.
 
 These methods follow the existing display hierarchy. Manila barangays belong to
