@@ -78,7 +78,7 @@ module Pilipinas
       end
 
       def build_index
-        rows = Psych.load_file(File.join(DATA_DIR, 'postal.yml')) || []
+        rows = Psych.load_file(File.join(DATA_DIR, 'postal.yml'), freeze: true) || []
         entries = rows.filter_map { |row| build_entry(row) }
         {
           by_locality: buckets(entries) { |entry| normalize(entry.locality) },

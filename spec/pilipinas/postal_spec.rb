@@ -16,7 +16,7 @@ RSpec.describe Pilipinas::Postal do
   end
 
   context 'with postal fixtures' do
-    before { allow(Psych).to receive(:load_file).with(file).and_return(rows) }
+    before { allow(Psych).to receive(:load_file).with(file, freeze: true).and_return(rows) }
 
     describe '.lookup' do
       it 'returns all repeated locality names with their independent parents' do
@@ -86,7 +86,7 @@ RSpec.describe Pilipinas::Postal do
       reverse = described_class.reverse_lookup(zip_code: '0123')
       expect(described_class.lookup(locality: 'santa maria')).to equal(forward)
       expect(described_class.reverse_lookup(zip_code: '0123')).to equal(reverse)
-      expect(Psych).to have_received(:load_file).with(file).once
+      expect(Psych).to have_received(:load_file).with(file, freeze: true).once
       expect(Pilipinas::Cache.keys).to eq(['index:Pilipinas::Postal'])
     end
 
@@ -105,7 +105,7 @@ RSpec.describe Pilipinas::Postal do
     end
 
     it 'handles an empty dataset' do
-      allow(Psych).to receive(:load_file).with(file).and_return(nil)
+      allow(Psych).to receive(:load_file).with(file, freeze: true).and_return(nil)
       expect(described_class.lookup(locality: 'Santa Maria')).to be_frozen.and be_empty
       expect(described_class.reverse_lookup(zip_code: '0123')).to be_frozen.and be_empty
     end
